@@ -14,6 +14,6 @@ class Transcode extends Model
         'original',
         'compressed',
         'transcoded',
-        'status'
+        'status',
     ];
 }

@@ -2,9 +2,9 @@
 
 namespace App\Traits;
 
-use Illuminate\Support\Str;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 trait HelperTrait
 {
@@ -151,9 +151,10 @@ trait HelperTrait
         $file_url = null;
         if ($fullRequest->hasFile($fileName)) {
             $file_temp = $fullRequest->file($fileName);
-            $destinations = 'uploads/' . $destination;
+            $destinations = 'uploads/'.$destination;
             $file_url = Storage::put($destinations, $file_temp);
         }
+
         return $file_url;
     }
 
@@ -178,21 +179,22 @@ trait HelperTrait
             }
 
             $file_temp = $fullRequest->file($fileName);
-            $destinations = 'uploads/' . $destination;
+            $destinations = 'uploads/'.$destination;
             $file_url = Storage::put($destinations, $file_temp);
         }
+
         return $file_url;
     }
 
-    // Delete File 
+    // Delete File
     protected function deleteFtpFile($file)
     {
-            $file_path = public_path('uploads/'.$file);
-            if (file_exists($file_path)) {
-                Storage::delete($file_path);
-            }
+        $file_path = public_path('uploads/'.$file);
+        if (file_exists($file_path)) {
+            Storage::delete($file_path);
+        }
 
-            return true;
+        return true;
     }
 
     protected function convertToClassName($input)
