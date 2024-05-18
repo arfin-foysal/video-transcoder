@@ -94,6 +94,21 @@ trait HelperTrait
         return $file_url;
     }
 
+    // protected function fileUpload($fullRequest, $fileName, $destination)
+    // {
+    //     $file_url = null;
+    //     if ($fullRequest->hasFile($fileName)) {
+    //         $image = $fullRequest->file($fileName);
+    //         $time = time();
+    //         $file = $fileName.'-'.Str::random(6).$time.'.'.$image->getClientOriginalExtension();
+    //         $destinationPath = 'uploads/'.$destination;
+    //         Storage::putFileAs($destinationPath, $image, $file);
+    //         $file_url = Storage::url($destinationPath.'/'.$file);
+    //     }
+
+    //     return $file_url;
+    // }
+
     /**
      * Create an Unauthorize JSON response.
      *

@@ -27,6 +27,7 @@
 7. Run `php artisan migrate` or `php artisan migrate:fresh --seed`
 8. Run `php artisan serve`
 9. Visit `http://localhost:8000` in your browser
+10. Storage link command `php artisan storage:link`
 
 ## About Me
 - **Foysal Ahmmad Arfin**

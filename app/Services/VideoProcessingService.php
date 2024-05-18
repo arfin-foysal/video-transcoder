@@ -3,21 +3,14 @@
 namespace App\Services;
 
 use App\Models\Transcode;
-use App\Traits\HelperTrait;
 use FFMpeg\Format\Video\X264;
-use Log;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 use ProtoneMedia\LaravelFFMpeg\Support\FFMpeg;
 
-class TranscodedService
+class VideoProcessingService
 {
-    use HelperTrait;
-
-    public function show($id)
-    {
-        return Transcode::findOrFail($id);
-    }
-
-    public function fileStore($request)
+    public function processVideo($request)
     {
         try {
             $uploadedVideo = $this->fileUpload($request, 'video', 'original');
@@ -26,15 +19,12 @@ class TranscodedService
                 $compressedVideo = $this->compressVideo($uploadedVideo);
 
                 if ($compressedVideo) {
-                    $transcodedVideo = $this->transcodedVideo($compressedVideo);
+                    $transcodedVideo = $this->transcodeVideo($compressedVideo);
                 }
             }
 
-            // if ($transcodedVideo && $compressedVideo) {
-            //     $this->deleteFile($uploadedVideo);
-            // }
-
-            $transcoded = Transcode::create([
+            // Save transcode details to database
+            $video = Transcode::create([
                 'user_id' => auth()->id() ?? 1,
                 'original' => $uploadedVideo ?? '',
                 'compressed' => $compressedVideo,
@@ -43,13 +33,33 @@ class TranscodedService
             ]);
 
             return [
-                'original' => $transcoded->original,
-                'compressed' => $transcoded->compressed,
-                'transcoded' => $transcoded->transcoded,
+                'id' => $video->id,
+                'original_url' => $video->original,
+                'compressed_url' => $video->compressed,
+                'transcoded_url' => $video->transcoded,
             ];
         } catch (\Throwable $th) {
             throw $th;
         }
+    }
+
+    public function fileUpload($fullRequest, $fileName, $destination)
+    {
+        $file = null;
+        $file_url = null;
+
+        if ($fullRequest->hasFile($fileName)) {
+            $image = $fullRequest->file($fileName);
+            $time = time();
+            $file = $fileName.'-'.str()->random(6).$time.'.'.$image->getClientOriginalExtension();
+            $filePath = $destination.'/'.$file;
+
+            // Choose the storage disk dynamically
+            Storage::disk(config('filesystems.default'))->putFileAs($destination, $image, $file);
+            $file_url = $filePath;
+        }
+
+        return $file_url;
     }
 
     public function compressVideo($uploadedVideo)
@@ -60,30 +70,27 @@ class TranscodedService
             $newFileName = $fileName.'_compressed.mp4'; // Create a new filename with the _compressed.mp4 extension
             $newFilePath = 'compressed/'.$newFileName; // Create a new file path
 
-            FFMpeg::fromDisk('uploads')
+            FFMpeg::fromDisk(config('filesystems.default'))
                 ->open($uploadedVideo)
                 ->export()
+                ->toDisk(config('filesystems.default'))
                 ->inFormat(new X264('aac'))
-
-                //onProgress callback
                 ->onProgress(function ($percentage) {
                     echo "Progress: {$percentage}% compressed\n";
                     Log::info("Progress: {$percentage}% compressed");
                 })
-
                 ->save($newFilePath); // Save the file to the new file path
 
-            return 'compressed/'.$newFileName; // Return the new file path
+            return $newFilePath; // Return the new file path
 
         } catch (\Throwable $th) {
             throw $th;
         }
     }
 
-    public function transcodedVideo($uploadedVideo)
+    public function transcodeVideo($uploadedVideo)
     {
         try {
-
             $fileName = pathinfo($uploadedVideo, PATHINFO_FILENAME); // Get the filename without extension
 
             $newFileName = $fileName.'.m3u8'; // Create a new filename with the .m3u8 extension
@@ -96,9 +103,10 @@ class TranscodedService
             $hdBitrate = (new X264('aac'))->setKiloBitrate(2500); // 720p
             $fullHdBitrate = (new X264('aac'))->setKiloBitrate(4000); // 1080p
 
-            FFMpeg::fromDisk('uploads')
+            FFMpeg::fromDisk(config('filesystems.default'))
                 ->open($uploadedVideo)
                 ->exportForHLS()
+                ->toDisk(config('filesystems.default'))
                 ->addFormat($lowBitrate, function ($media) {
                     $media->addFilter('scale=256:144');
                 })
@@ -121,10 +129,9 @@ class TranscodedService
                     echo "Progress: {$percentage}% transcoded\n";
                     Log::info("Progress: {$percentage}% transcoded");
                 })
-                // ->toDisk('secrets')
                 ->save($newFilePath); // Save the file to the new file path
 
-            return 'secrets/'.$newFileName; // Return the new file path
+            return $newFilePath; // Return the new file path
 
         } catch (\Throwable $th) {
             throw $th;

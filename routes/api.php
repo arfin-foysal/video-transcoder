@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\TranscodedController;
+use App\Http\Controllers\VideoController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -8,5 +8,5 @@ Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');
 
-Route::post('/video', [TranscodedController::class, 'Store']);
-Route::get('/video/{id}', [TranscodedController::class, 'show']);
+Route::get('/video/{id}', [VideoController::class, 'getVideosById']);
+Route::post('/transcode', [VideoController::class, 'transcodeVideo']);
