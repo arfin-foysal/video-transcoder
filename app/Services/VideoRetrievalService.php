@@ -15,16 +15,14 @@ class VideoRetrievalService
             return ['error' => 'Record not found'];
         }
 
-        
-        $originalPath = $video->original ? Storage::disk(config('filesystems.default'))->url('uploads/' . $video->original) : null;
-        $compressedPath = $video->compressed ? Storage::disk(config('filesystems.default'))->url('uploads/' . $video->compressed) : null;
-        $transcodedPath = $video->transcoded ? Storage::disk(config('filesystems.default'))->url('uploads/' . $video->transcoded) : null;
-        
+        $originalPath = $video->original ? Storage::disk(config('filesystems.default'))->url('uploads/'.$video->original) : null;
+        $compressedPath = $video->compressed ? Storage::disk(config('filesystems.default'))->url('uploads/'.$video->compressed) : null;
+        $transcodedPath = $video->transcoded ? Storage::disk(config('filesystems.default'))->url('uploads/'.$video->transcoded) : null;
 
         return [
             'original_url' => $originalPath,
             'compressed_url' => $compressedPath,
-            'transcoded_url' => $transcodedPath,    
+            'transcoded_url' => $transcodedPath,
         ];
     }
 }

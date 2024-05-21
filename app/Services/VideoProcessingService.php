@@ -76,7 +76,7 @@ class VideoProcessingService
                 ->toDisk(config('filesystems.default'))
                 ->inFormat(new X264('aac'))
                 ->onProgress(function ($percentage) {
-                    echo "Progress: {$percentage}% compressed\n";
+                    // echo "Progress: {$percentage}% compressed\n";
                     Log::info("Progress: {$percentage}% compressed");
                 })
                 ->save($newFilePath); // Save the file to the new file path
@@ -126,7 +126,7 @@ class VideoProcessingService
                     $media->addFilter('scale=1920:1080');
                 })
                 ->onProgress(function ($percentage) {
-                    echo "Progress: {$percentage}% transcoded\n";
+                    // echo "Progress: {$percentage}% transcoded\n";
                     Log::info("Progress: {$percentage}% transcoded");
                 })
                 ->save($newFilePath); // Save the file to the new file path
